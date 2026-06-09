@@ -4,6 +4,8 @@ using Microsoft.Extensions.FileProviders;
 using WebStoreMVC;
 using WebStoreMVC.Data;
 using WebStoreMVC.Data.Entities.Identity;
+using WebStoreMVC.Interfaces;
+using WebStoreMVC.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,8 @@ builder.Services.AddIdentity<UserEntity, RoleEntity>(options =>
 })
     .AddEntityFrameworkStores<MyContextShopMVC>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.AddControllersWithViews();
 
