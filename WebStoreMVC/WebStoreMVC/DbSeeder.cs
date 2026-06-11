@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using WebStoreMVC.Data.Entities;
+using WebStoreMVC.Data.Entities.Catalog;
 using WebStoreMVC.Data.Entities.Identity;
 using WebStoreMVC.Interfaces;
 using WebStoreMVC.Mapper;
-using WebStoreMVC.Models;
 using WebStoreMVC.Models.Seeder;
 
 namespace WebStoreMVC;
@@ -22,7 +23,7 @@ public static class DbSeeder
         await context.Database.MigrateAsync();
         var roleManager = services.GetRequiredService<RoleManager<RoleEntity>>();
         var userManager = services.GetRequiredService<UserManager<UserEntity>>();
-        if (!context.Roles.Any()) //якщо в бд немає ролей
+        if (!context.Roles.Any()) // Якщо в БД не існує ролей
         {
             // Створення ролей
             foreach (var roleName in Constants.Roles.AllRoles)
@@ -33,6 +34,7 @@ public static class DbSeeder
                 }
             }
         }
+
         if (!context.Users.Any()) // Якщо в БД не існує користувачів
         {
             // Отримує інтерфейс дял роботи з зображеннями, щоб встановити аватар для користувача
@@ -44,7 +46,7 @@ public static class DbSeeder
                 try
                 {
                     var users = JsonSerializer.Deserialize<List<SeederUserModel>>(jsonData);
-                    foreach(var user in users)
+                    foreach (var user in users)
                     {
                         var entity = new UserEntity
                         {
@@ -57,10 +59,10 @@ public static class DbSeeder
                         var result = await userManager.CreateAsync(entity, user.Password);
                         if (!result.Succeeded)
                         {
-                            Console.WriteLine("Помилка створення користувача "+ user.Email);
+                            Console.WriteLine("Помилка стоврення користувача " + user.Email);
                             continue;
                         }
-                        foreach(var role in user.Roles)
+                        foreach (var role in user.Roles)
                         {
                             if (await roleManager.RoleExistsAsync(role))
                                 await userManager.AddToRoleAsync(entity, role);
@@ -71,12 +73,12 @@ public static class DbSeeder
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Помилка читання даниз з Json");
+                    Console.WriteLine("Помилка читання даних із Json користувачів");
                 }
             }
             else
             {
-                Console.WriteLine("Помилка існування файлу Users.Json");
+                Console.WriteLine("Помилка існування файлу Users.json");
             }
         }
 
@@ -110,5 +112,49 @@ public static class DbSeeder
                 Console.WriteLine("Помилка існування файлу Categories.json");
             }
         }
+
+        if (!context.Products.Any()) // Якщо в БД не існує продукт
+        {
+            // Отримує інтерфейс дял роботи з зображеннями, щоб встановити аватар для користувача
+            var imageService = services.GetRequiredService<IImageService>();
+            var productMapper = services.GetRequiredService<ProductMapper>();
+            var jsonFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "JsonData", "Products.json");
+            if (File.Exists(jsonFile))
+            {
+                var jsonData = await File.ReadAllTextAsync(jsonFile);
+                try
+                {
+                    var products = JsonSerializer.Deserialize<List<SeederProductModel>>(jsonData);
+
+                    foreach (var prod in products)
+                    {
+                        var entity = productMapper.SeederProductModelToProductEntity(prod);
+                        context.Products.Add(entity);
+                        await context.SaveChangesAsync();
+                        short priority = 1;
+                        foreach (var img in prod.Images)
+                        {
+                            var entityImage = new ProductImageEntity();
+                            entityImage.Priority = priority;
+                            entityImage.Name = await imageService.SaveImageFromUrlAsync(img);
+                            entityImage.Product = entity;
+                            priority++;
+                            context.ProductImages.Add(entityImage);
+                            context.SaveChanges();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Помилка читання даних із Json Products");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Помилка існування файлу Categories.json");
+            }
+        }
+
     }
 }
+
