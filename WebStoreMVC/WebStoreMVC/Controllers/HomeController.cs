@@ -22,10 +22,14 @@ namespace WebStoreMVC.Controllers
         [HttpGet]
         public IActionResult Products(string categorySlug)
         {
+            var cat = myContext.Categories
+                .SingleOrDefault(c => c.Slug == categorySlug);
+            long catId = cat!.Id;
+
             var items = myContext.Products
                 .Include(x => x.Category)
                 .Include(x => x.ProductImages)
-                .Where(x => x.Category.Slug == categorySlug)
+                .Where(x => x.CategoryId == catId)
                 .ToList();
             var modal = productMapper.ListProductEntityToItemModels(items);
             return View(modal);

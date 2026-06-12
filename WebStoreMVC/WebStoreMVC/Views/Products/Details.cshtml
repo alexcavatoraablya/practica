@@ -1,0 +1,162 @@
+﻿@model WebStoreMVC.Models.Product.ProductItemModel
+
+@{
+    ViewData["Title"] = Model.Name;
+    var mainImage = Model.Images.FirstOrDefault() ?? "no-image.webp";
+}
+
+<div class="container py-2">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index">Головна</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-controller="Home"
+                   asp-action="Products"
+                   asp-route-categorySlug="@Model.CategorySlug">
+                    @Model.CategoryName
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                @Model.Name
+            </li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+
+        <!-- Фото товару -->
+        <div class="col-md-6">
+            <div class="card shadow border-0 position-relative">
+                <img id="mainImage"
+                     src="@($"/images/800_{mainImage}")"
+                     class="img-fluid rounded"
+                     alt="@Model.Name">
+
+                @if (Model.Images.Count > 1)
+                {
+                    <button class="btn btn-dark btn-sm opacity-75 position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle"
+                            id="prevBtn" style="width:36px;height:36px;padding:0;line-height:1;">
+                        &#8249;
+                    </button>
+                    <button class="btn btn-dark btn-sm opacity-75 position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle"
+                            id="nextBtn" style="width:36px;height:36px;padding:0;line-height:1;">
+                        &#8250;
+                    </button>
+                    <span id="imgCounter"
+                          class="position-absolute bottom-0 end-0 m-2 badge bg-dark opacity-75">
+                        1 / @Model.Images.Count
+                    </span>
+                }
+            </div>
+
+            @if (Model.Images.Count > 1)
+            {
+                <div class="row mt-3 g-2">
+                    @for (int i = 0; i < Model.Images.Count; i++)
+                    {
+                        <div class="col-3">
+                            <img src="@($"/images/200_{Model.Images[i]}")"
+                                 class="img-thumbnail thumb-item @(i == 0 ? "border-primary" : "")"
+                                 data-index="@i"
+                                 alt="@Model.Name"
+                                 style="cursor:pointer; opacity:@(i == 0 ? "1" : "0.6")">
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Інформація -->
+        <div class="col-md-6">
+
+            <span class="badge bg-secondary mb-3">
+                @Model.CategoryName
+            </span>
+
+            <h1 class="fw-bold mb-3">
+                @Model.Name
+            </h1>
+
+            <h2 class="text-primary fw-bold mb-4">
+                @Model.Price.ToString("0.00") грн
+            </h2>
+
+            <div class="mb-4">
+                <p class="lead">
+                    @Model.Description
+                </p>
+            </div>
+
+            <form asp-controller="Cart"
+                  asp-action="AddToCart"
+                  method="post">
+
+                <input type="hidden"
+                       name="productId"
+                       value="@Model.Id" />
+
+                <div class="row align-items-center g-3">
+
+                    <div class="col-auto">
+                        <label class="form-label">Кількість</label>
+                        <input type="number"
+                               name="quantity"
+                               value="1"
+                               min="1"
+                               class="form-control"
+                               style="width:100px;">
+                    </div>
+
+                    <div class="col">
+                        <button type="submit"
+                                class="btn btn-success btn-lg w-100">
+                            🛒 Додати в кошик
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const images = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Images));
+            if (images.length <= 1) return;
+
+            let current = 0;
+            const mainImg = document.getElementById('mainImage');
+            const counter = document.getElementById('imgCounter');
+            const thumbs  = document.querySelectorAll('.thumb-item');
+
+            function goTo(i) {
+                current = (i + images.length) % images.length;
+                mainImg.src = `/images/800_${images[current]}`;
+                counter.textContent = `${current + 1} / ${images.length}`;
+                thumbs.forEach((t, idx) => {
+                    t.style.opacity = idx === current ? '1' : '0.6';
+                    t.classList.toggle('border-primary', idx === current);
+                });
+            }
+
+            document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+            document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+            thumbs.forEach(t => t.addEventListener('click', () => goTo(+t.dataset.index)));
+
+            // свайп на мобільних
+            let startX = 0;
+            mainImg.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+            mainImg.addEventListener('touchend', e => {
+                const diff = startX - e.changedTouches[0].clientX;
+                if (Math.abs(diff) > 40) goTo(diff > 0 ? current + 1 : current - 1);
+            });
+        })();
+    </script>
+}

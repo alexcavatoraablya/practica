@@ -4,7 +4,7 @@
 }
 
 
-<div class="container py-5">
+<div class="container py-2">
     <div class="text-center mb-5">
         <h1 class="display-4 fw-bold">Категорії товарів</h1>
         <p class="text-muted">
@@ -30,7 +30,7 @@
 
                         <a asp-controller="Home"
                            asp-action="Products"
-                           asp-route-slug="@category.Slug"
+                           asp-route-categorySlug="@category.Slug"
                            class="btn btn-primary mt-auto">
                             Переглянути
                         </a>

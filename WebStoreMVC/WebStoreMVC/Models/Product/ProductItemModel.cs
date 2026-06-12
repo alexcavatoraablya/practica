@@ -9,5 +9,6 @@ public class ProductItemModel
     public string Description { get; set; } = String.Empty;
     public string CategoryId { get; set; }
     public string CategoryName { get; set; } = String.Empty;
+    public string CategorySlug { get; set; } = String.Empty;
     public List<string> Images { get; set; } = null!;
 }
