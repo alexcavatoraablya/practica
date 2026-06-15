@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using WebStoreMVC.Data.Entities.Order;
 
 namespace WebStoreMVC.Data.Entities.Catalog;
 
@@ -21,6 +22,6 @@ public class ProductEntity : BaseEntity<long>
     public long CategoryId { get; set; }
 
     public CategoryEntity? Category { get; set; }
-
     public ICollection<ProductImageEntity>? ProductImages { get; set; }
+    public ICollection<OrderItemEntity>? OrderItems { get; set; }
 }
