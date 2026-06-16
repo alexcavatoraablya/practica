@@ -69,6 +69,24 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
+//Нашатування для маршрутів. У нас є контролери - Вони мають називатися HomeController
+//При цьому враховується лише Home. Методи цього класу називаються Action - тобто обробники
+//Для того, щоб при запуску сайту ми бачили, щось визивається згідного налаштувань HomeController
+//і його метод Index при цьому може бути параметер у маршруті id - але там є знак питання, тобто
+//може бути null
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapAreaControllerRoute(
+      name: "admin_area",
+      areaName: "Admin",
+      pattern: "admin/{controller=Dashboards}/{action=Index}/{id?}"
+    );
+    endpoints.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}"
+    );
+});
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")

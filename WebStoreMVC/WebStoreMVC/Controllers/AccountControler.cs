@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebStoreMVC.Constants;
 using WebStoreMVC.Data.Entities.Identity;
 using WebStoreMVC.Interfaces;
@@ -13,6 +15,40 @@ public class AccountController(
     IImageService imageService
     ) : Controller
 {
+    [HttpGet] //Вхід нового користувача
+    public IActionResult Login(string? returnUrl = null)
+    {
+        ViewBag.ReturnUrl = returnUrl; //зберігаємо адресу, якуди треба перейти
+        return View();
+    }
+
+    [HttpPost] //Вхід нового користувача
+    public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
+    {
+        if (ModelState.IsValid) //Зберігаємо категорію в БД, якщо модель валідна
+        {
+            //Шукаємо користувача по email
+            var user = await userManager.FindByEmailAsync(model.Email);
+            if (user != null)
+            {
+                //пошук користувача по паролю
+                var res = await signInManager.PasswordSignInAsync(user, model.Password, false, false);
+                if (res.Succeeded)
+                {
+                    await signInManager.SignInAsync(user, false); // залогінюємо користувача
+                    // перевіряємо, що URL локальний
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
+                    return Redirect("/");
+                }
+            }
+            ModelState.AddModelError("", "Користувач з таким email не знайдений");
+        }
+        return View(model); // Якщо модель не валідна, повертаємо її назад на форму для виправлення помилок
+    }
+
     [HttpGet] //Реєстрація нового користувача
     public IActionResult Register()
     {
@@ -43,7 +79,7 @@ public class AccountController(
             if (result.Succeeded)
             {
                 result = await userManager.AddToRoleAsync(user, Roles.User);
-                await signInManager.SignInAsync(user, false); //логін користувача
+                await signInManager.SignInAsync(user, false); // залогінюємо користувача
                 return RedirectToAction("Index", "Home");
             }
             else
@@ -54,6 +90,30 @@ public class AccountController(
         }
         return View(model); // Якщо модель не валідна, повертаємо її назад на форму для виправлення помилок
     }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> Profile()
+    {
+        var user = await userManager.Users
+            .Include(x => x.Orders)
+            .SingleOrDefaultAsync(x => x.UserName == User.Identity!.Name);
+
+        if (user == null)
+            return NotFound();
+
+        var model = new ProfileViewModel
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email!,
+            Image = user.Image,
+            OrdersCount = user.Orders?.Count ?? 0
+        };
+
+        return View(model);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Logout()
     {
@@ -61,4 +121,3 @@ public class AccountController(
         return Redirect("/");
     }
 }
-
