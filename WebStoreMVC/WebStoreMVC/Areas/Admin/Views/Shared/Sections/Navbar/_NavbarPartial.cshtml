@@ -2,7 +2,7 @@
 @if (ViewData["navbarFull"] != null)
 {
   <div class="navbar-brand app-brand demo d-none d-xl-flex py-0 me-6">
-    <a asp-controller="Dashboards" asp-action="Index" class="app-brand-link gap-2">
+    <a asp-area="" asp-controller="Home" asp-action="Index" class="app-brand-link gap-2">
       <span class="app-brand-logo demo">
         @await Html.PartialAsync("../_Partials/_Macros")
       </span>

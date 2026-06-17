@@ -1,6 +1,7 @@
 ﻿namespace WebStoreMVC.Mapper;
 
 using Riok.Mapperly.Abstractions;
+using WebStoreMVC.Areas.Admin.Models.Product;
 using WebStoreMVC.Data.Entities.Catalog;
 using WebStoreMVC.Models.Product;
 using WebStoreMVC.Models.Seeder;
@@ -29,4 +30,7 @@ public partial class ProductMapper
             ?? [];
     }
 
+    [MapperIgnoreTarget(nameof(ProductEntity.Category))]
+    [MapperIgnoreTarget(nameof(ProductEntity.ProductImages))]
+    public partial ProductEntity CreateProductToProductEntity(CreateProductViewModel model);
 }

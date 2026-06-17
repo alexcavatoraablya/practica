@@ -41,6 +41,9 @@ public class AccountController(
                     {
                         return Redirect(returnUrl);
                     }
+                    bool isAdmin = await userManager.IsInRoleAsync(user, Roles.Admin);
+                    if(isAdmin)
+                        return Redirect("/admin");
                     return Redirect("/");
                 }
             }

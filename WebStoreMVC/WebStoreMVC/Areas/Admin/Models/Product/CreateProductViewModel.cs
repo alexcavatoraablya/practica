@@ -14,6 +14,14 @@ public class CreateProductViewModel
     public string Description { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Обов'язкове поле")]
+    [Display(Name = "Ціна")]
+    public string Price { get; set; }
+
+    [Required(ErrorMessage = "Обов'язкове поле")]
+    [Display(Name = "Slug")]
+    public string Slug { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Обов'язкове поле")]
     [Display(Name = "Категорія")]
     public string CategoryName { get; set; } = string.Empty;
 

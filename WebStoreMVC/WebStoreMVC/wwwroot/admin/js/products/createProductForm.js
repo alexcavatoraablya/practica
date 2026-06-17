@@ -5,6 +5,20 @@
         savePhotos();
     });
 
+    const nameInput = document.getElementById("Name");
+    const slugInput = document.getElementById("Slug");
+
+    nameInput.addEventListener("input", () => {
+
+        slugInput.value = slugify(nameInput.value, {
+            lower: true,
+            strict: true,
+            trim: true
+        });
+
+    });
+
+
     tinymce.init({
         selector: '#description',
         plugins: 'advlist autolink link image lists charmap preview anchor pagebreak searchreplace wordcount code fullscreen insertdatetime media table help',
@@ -14,7 +28,8 @@
 
     new Sortable(document.getElementById('imageList'), {
         animation: 150,
-        ghostClass: 'opacity-50'
+        ghostClass: 'opacity-50',
+        onEnd: renumberBadges
     });
 
     const fileInput = document.getElementById('fileInput');
@@ -28,36 +43,60 @@
         Array.from(files).forEach(file => {
             if (!file.type.startsWith('image/')) return;
 
+            const col = document.createElement('div');
+            col.className = 'col';
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'position-relative';
+            wrapper.innerHTML = `
+        <div class="d-flex align-items-center justify-content-center bg-light rounded border" style="height:100px;">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+        </div>`;
+
+            col.appendChild(wrapper);
+            imageList.appendChild(col);
+
             const reader = new FileReader();
             reader.onload = function (e) {
-                const col = document.createElement('div');
-                col.className = 'col';
-
-                const wrapper = document.createElement('div');
-                wrapper.className = 'position-relative';
+                wrapper.innerHTML = '';
 
                 const img = document.createElement('img');
                 img.src = e.target.result;
-                img.className = 'img-fluid rounded border';
+                img.className = 'img-fluid rounded border w-100';
                 img.style.height = '100px';
                 img.style.objectFit = 'cover';
-                img.alt = 'Preview';
+                img.alt = file.name;
+                img.title = file.name;
+
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-dark position-absolute bottom-0 start-0 m-1 priority-badge';
 
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
                 removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle';
                 removeBtn.innerHTML = '&times;';
-                removeBtn.addEventListener('click', () => col.remove());
+                removeBtn.setAttribute('aria-label', 'Видалити фото');
+                removeBtn.addEventListener('click', () => {
+                    col.remove();
+                    renumberBadges();
+                });
 
                 wrapper.appendChild(img);
+                wrapper.appendChild(badge);
                 wrapper.appendChild(removeBtn);
-                col.appendChild(wrapper);
-                imageList.appendChild(col);
+
+                renumberBadges();
             };
             reader.readAsDataURL(file);
         });
 
         fileInput.value = '';
+    }
+
+    function renumberBadges() {
+        imageList.querySelectorAll('.priority-badge').forEach((badge, index) => {
+            badge.textContent = index + 1;
+        });
     }
 
     function savePhotos() {

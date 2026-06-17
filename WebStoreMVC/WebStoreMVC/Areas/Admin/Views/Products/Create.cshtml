@@ -26,6 +26,16 @@
                         </select>
                     </div>
 
+                    <div class="col-6">
+                        <label asp-for="Price" class="form-label"></label>
+                        <textarea asp-for="Price" class="form-control" placeholder="Ціна товару"></textarea>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Slug" class="form-label"></label>
+                        <textarea asp-for="Slug" class="form-control" placeholder="Slug товару"></textarea>
+                    </div>
+
                     <div class="col-12">
                         <label asp-for="Description" class="form-label"></label>
                         <textarea asp-for="Description" id="description" class="form-control" rows="4" placeholder="Describe your product"></textarea>
@@ -52,4 +62,5 @@
     <script src="https://cdn.tiny.cloud/1/msp28lemwtyvod9k40ujq2ozfjsjny5ap66dtkdt2b1eqd6l/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
     <script src="/admin/js/products/createProductForm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/slugify@1.6.6/slugify.min.js"></script>
 }
